@@ -5,17 +5,21 @@ import { assert
        , should
        } from 'chai'
 
+const foo = "foo"
 
-describe('Radgraph', function() {
+describe('Test environment', function() {
 
-  it ('should compile', function() {
+  it ('"assert" works', function() {
+    assert.equal(foo, "foo")
+  })
 
+  it ('"should" works', function() {
     should()
+    foo.should.equal("foo")
+  })
 
-    assert.equal(Radgraph(), "hello world")
-    Radgraph().should.equal("hello world")
-    expect(Radgraph()).to.equal("hello world")
-
+  it ('"expect" works', function() {
+    expect(foo).to.equal("foo")
   })
 
 })
