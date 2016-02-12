@@ -65,6 +65,11 @@ export function resetGraph() {
         , Authored.add(1, 9)
 
       // Add rating relationships
+        , Rated.add(1, 2)
+        , Promise.delay(1)
+        , Rated.add(1, 2, { rating: 5, note: "foo" })
+        , Rated.add(1, 4, { rating: 3 })
+        , Rated.add(2, 2, { rating: 1, note: "fooo" })
 
         ]
       , a => null
