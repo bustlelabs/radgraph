@@ -89,6 +89,18 @@ describe ('Radgraph', function() {
       })
     })
 
+    it ('should have a working "of" shorthand', function() {
+      return Promise.all(
+        [ Authored.inv.of(4)
+        , Authored.inv.range(4)
+        , Rated.of(1)
+        , Rated.range(1)
+        ]).then(([e1, [e2], e3, [e4]]) => {
+          assert.deepEqual(e1, e2)
+          assert.deepEqual(e3, e4)
+        })
+    })
+
   })
 
 })

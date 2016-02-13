@@ -12,11 +12,23 @@ export function response([err, val]) {
 export function ParseAdj(type, from) {
   return function(val) {
     const s = val.split(':')
-    return { type
-           , from
-           , to: parseInt(s[0], 10)
-           , created_at: s[1]
-           }
+    return val &&
+      { type
+      , from
+      , to: parseInt(s[0], 10)
+      , created_at: s[1]
+      }
+  }
+}
+
+export function ParseFullAdj(type, from, to) {
+  return function (time) {
+    return time &&
+      { type
+      , from
+      , to
+      , created_at: time
+      }
   }
 }
 
