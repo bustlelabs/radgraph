@@ -49,15 +49,15 @@ function Radgraph (schema, hooks, redisOpts) {
     , inv: null
 
     // Query edges based on type and parent ID
-    , range: (from, { properties, limit = 30, offset = 0 } = {}) =>
+    , from: (from, { properties, limit = 30, offset = 0 } = {}) =>
         getAdjs(redis, from, limit, offset)
           .map(ParseAdj(type, from))
           .then(getAllAttrs)
 
     // Returns newest edge pointing from an node
     // only really useful for inv. one-to-many relationships
-    , of: (from) =>
-        radgraph.range(from, { limit: 1 })
+    , of: from =>
+        radgraph.from(from, { limit: 1 })
           .then(head)
 
     // Return all edges from id1 to id2
@@ -74,7 +74,7 @@ function Radgraph (schema, hooks, redisOpts) {
           .then(e => {
             if (!(e && schema.properties))
               return e
-            return getAttrs(redis, from, to, e.time)
+            return getAttrs(redis, from, to, e.created_at)
               .then(attrs => augment(e, attrs))
           })
 
@@ -99,28 +99,50 @@ function Radgraph (schema, hooks, redisOpts) {
           .then(time => {
             if (!time) return null
             const attrs = _.pick(attributes, _.keys(schema.properties))
+            const edge = { type
+                         , from
+                         , to
+                         , created_at: time
+                         , data: attributes
+                         }
             return setAttrs(redis, from, to, time, attrs)
+              .return(edge)
           })
 
     // Destroy an edge from id1
     // * if no time is provided, most recent edge will be destroyed
-    , delete: (id1, id2, time) =>
+    , delete: (from, to, time) =>
         getAdjTime(from, to, time)
-          .then(time => {
-            return ( schema.properties
-                   ? remAttrs
-                      ( remAdj(redis.pipeline(), from, to, time)
-                      , from, to, time
-                      ).exec()
-                   : remAdj(redis, from, to, time)
-                   ).return(time)
-          })
+          .then(time =>
+            remAdj(redis, from, to, time)
+              .return(time))
 
     // Destroy all edges leading away from a node
     // typically called when a node is deleted
-    , deleteAll: (id2) => {
-        // TODO: this.
-      }
+    , deleteAll: from =>
+        // no data and no inverses, just delete the adjacency list
+        // Remove all inverse edges
+        redis.lrange(`${keyspace}:${from}`, 0, -1)
+          .map(r => r.split(':'))
+          .then(es => {
+            const p = redis.multi()
+            // delete adjacency list
+            p.del(`${keyspace}:${from}`)
+            _.forEach
+              ( es
+              , ([to, time]) => {
+                // delete "all" query
+                p.del(`${edgeKey(from, to)}`)
+                // delete inverse adjacencies
+                if ( invKeyspace )
+                  p.lrem(`${invKeyspace}:${to}`, 1, `${from}:${time}`)
+                // delete data attributes
+                if ( schema.properties )
+                  p.del(`${edgeKey(from, to)}:${time}`)
+              })
+            return p.exec()
+              .return(es.length)
+          })
 
     }
 
@@ -164,10 +186,7 @@ function Radgraph (schema, hooks, redisOpts) {
     return p.exec()
       .map(response)
       .then(attrs => _.zipWith   // and augment our edges with a "data" property
-        ( edges
-        , attrs
-        , augment
-        ))
+        ( edges, attrs, augment ))
   }
 
   // if time is provided, check if it exists
@@ -191,7 +210,8 @@ function Radgraph (schema, hooks, redisOpts) {
   function addAdj(p, from, to, time, attributes) {
     const t = p.multi()
     t.lpush(`${keyspace}:${from}`, `${to}:${time}`)
-    t.lpush(`${invKeyspace}:${to}`, `${from}:${time}`)
+    if (invKeyspace)
+      t.lpush(`${invKeyspace}:${to}`, `${from}:${time}`)
     t.zadd(edgeKey(from, to), time, time)
     if (attributes)
       setAttrs(t, from, to, time, attributes)
@@ -200,10 +220,11 @@ function Radgraph (schema, hooks, redisOpts) {
   function remAdj(p, from, to, time) {
     const t = p.multi()
     t.lrem(`${keyspace}:${from}`, 1, `${to}:${time}`)
-    t.lrem(`${invKeyspace}:${to}`, 1, `${from}:${time}`)
+    if (invKeyspace)
+      t.lrem(`${invKeyspace}:${to}`, 1, `${from}:${time}`)
     t.zrem(edgeKey(from, to), time)
     if (schema.properties)
-      remAttrs(t, from, to, time, attributes)
+      remAttrs(t, from, to, time)
     return t.exec()
   }
 

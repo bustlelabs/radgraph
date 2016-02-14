@@ -14,13 +14,13 @@ import { resetGraph
 describe ('Radgraph', function() {
 
   before(function(done) {
-    return resetGraph().then(() => done())
+    return resetGraph().then(done)
   })
 
-  describe ('.range', function() {
+  describe ('.from', function() {
 
     it ('should return all results', function() {
-      return Authored.range(1)
+      return Authored.from(1)
         .then(r => {
           assert.lengthOf(r, 5)
           _.forEach
@@ -37,7 +37,7 @@ describe ('Radgraph', function() {
     })
 
     it ('should return inverse results', function() {
-      return Authored.inv.range(4)
+      return Authored.inv.from(4)
         .then(r => {
           assert.lengthOf(r, 1)
           const e = r[0]
@@ -48,7 +48,7 @@ describe ('Radgraph', function() {
     })
 
     it ('should take a limit param', function() {
-      return Authored.range(3, { limit: 2 })
+      return Authored.from(3, { limit: 2 })
         .then(r => {
           assert.lengthOf(r, 2)
           assert.propertyVal(r[1], 'to', 6)
@@ -56,7 +56,7 @@ describe ('Radgraph', function() {
     })
 
     it ('should take an offset param', function() {
-      return Authored.range(2, { offset: 1 })
+      return Authored.from(2, { offset: 1 })
       .then(r => {
         assert.lengthOf(r, 1)
           assert.propertyVal(r[0], 'to', 3)
@@ -64,21 +64,27 @@ describe ('Radgraph', function() {
     })
 
     it ('should take both limit and offset', function() {
-      return Authored.range(1, { offset: 1, limit: 3 })
+      return Authored.from(1, { offset: 1, limit: 3 })
       .then(r => {
         assert.lengthOf(r, 3)
-          assert.propertyVal(r[2], 'to', 2)
+        assert.propertyVal(r[2], 'to', 2)
+      })
+    })
+
+    it ('should handle the empty case', function() {
+      return Authored.from(4)
+      .then(r => {
+        assert.lengthOf(r, 0)
       })
     })
 
     it ('should augment responses with data', function() {
-      return Rated.range(1)
+      return Rated.from(1)
       .then(r => {
         _.forEach(r, e => assert.property(e, 'data'))
 
         assert.notDeepProperty(r[2], 'data.rating')
         assert.notDeepProperty(r[2], 'data.note')
-
 
         assert.deepPropertyVal(r[1], 'data.rating', 5)
         assert.deepPropertyVal(r[1], 'data.note', 'foo')
@@ -92,9 +98,9 @@ describe ('Radgraph', function() {
     it ('should have a working "of" shorthand', function() {
       return Promise.all(
         [ Authored.inv.of(4)
-        , Authored.inv.range(4)
+        , Authored.inv.from(4)
         , Rated.of(1)
-        , Rated.range(1)
+        , Rated.from(1)
         ]).then(([e1, [e2], e3, [e4]]) => {
           assert.deepEqual(e1, e2)
           assert.deepEqual(e3, e4)
