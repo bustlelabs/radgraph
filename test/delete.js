@@ -54,8 +54,8 @@ describe ('Radgraph', function() {
     })
 
     it ('should delete by time', function() {
-      return Clipped.all(2, 1)
-        .then(r => r[1].created_at)
+      return Clipped.find(2, 1)
+        .then(r => r[1].time)
         .then(time => Clipped.delete(2, 1, { time }))
         .then(() => Clipped.inv.of(1))
         .then(r => {
@@ -87,7 +87,7 @@ describe ('Radgraph', function() {
       return Promise.all
         ( [ Authored.from(1)
           , Authored.inv.of(2)
-          , Authored.all(1, 2)
+          , Authored.find(1, 2)
           , Authored.get(1, 5)
           ] )
         .then(([r1, r2, r3, r4]) => {
@@ -102,7 +102,7 @@ describe ('Radgraph', function() {
       return Promise.all
         ( [ Authored.inv.from(8)
           , Authored.of(3)
-          , Authored.all(3, 8)
+          , Authored.find(3, 8)
           , Authored.inv.get(8, 3)
           ] )
         .then(([r1, r2, r3, r4]) => {

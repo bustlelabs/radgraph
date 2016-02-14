@@ -62,7 +62,7 @@ function Radgraph (schema, hooks, redisOpts) {
 
     // Return all edges from id1 to id2
     // * used for non-unique edges
-    , all: (from, to, { properties, limit = 30, offset = 0 } = {}) =>
+    , find: (from, to, { properties, limit = 30, offset = 0 } = {}) =>
         getAdj(redis, from, to, limit, offset)
           .map(ParseFullAdj(type, from, to))
           .then(getAllAttrs)
@@ -74,7 +74,7 @@ function Radgraph (schema, hooks, redisOpts) {
           .then(e => {
             if (!(e && schema.properties))
               return e
-            return getAttrs(redis, from, to, e.created_at)
+            return getAttrs(redis, from, to, e.time)
               .then(attrs => augment(e, attrs))
           })
 
@@ -84,7 +84,7 @@ function Radgraph (schema, hooks, redisOpts) {
         const edge = { type
                      , from
                      , to
-                     , created_at: time
+                     , time
                      , data: attributes
                      }
         return addAdj(redis, from, to, time, attributes)
@@ -102,7 +102,7 @@ function Radgraph (schema, hooks, redisOpts) {
             const edge = { type
                          , from
                          , to
-                         , created_at: time
+                         , time
                          , data: attributes
                          }
             return setAttrs(redis, from, to, time, attrs)
@@ -131,7 +131,7 @@ function Radgraph (schema, hooks, redisOpts) {
             _.forEach
               ( es
               , ([to, time]) => {
-                // delete "all" query
+                // delete "find" query assocs
                 p.del(`${edgeKey(from, to)}`)
                 // delete inverse adjacencies
                 if ( invKeyspace )
@@ -180,8 +180,8 @@ function Radgraph (schema, hooks, redisOpts) {
     const p = redis.pipeline()   // otherwise, get all of the edge attributes
     _.forEach
       ( edges
-      , ({ from, to, created_at }) =>
-          getAttrs(p, from, to, created_at)
+      , ({ from, to, time }) =>
+          getAttrs(p, from, to, time)
       )
     return p.exec()
       .map(response)

@@ -16,7 +16,7 @@ export function ParseAdj(type, from) {
       { type
       , from
       , to: parseInt(s[0], 10)
-      , created_at: s[1]
+      , time: s[1]
       }
   }
 }
@@ -27,7 +27,7 @@ export function ParseFullAdj(type, from, to) {
       { type
       , from
       , to
-      , created_at: time
+      , time
       }
   }
 }

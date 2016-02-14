@@ -62,13 +62,13 @@ describe ('Radgraph', function() {
     })
 
     it ('should take a time attribute', function() {
-      return Clipped.all(2, 1)
-        .then(r => r[1].created_at)
+      return Clipped.find(2, 1)
+        .then(r => r[1].time)
         .then(time => Clipped.set(2, 1, { title: "foo", time }))
         .then(r => {
           assert.deepPropertyVal(r, 'data.title', 'foo')
         })
-        .then(() => Clipped.all(2, 1))
+        .then(() => Clipped.find(2, 1))
         .then(r => {
           assert.deepPropertyVal(r, '1.data.title', 'foo')
         })

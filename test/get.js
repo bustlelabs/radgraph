@@ -15,11 +15,11 @@ describe('Radgraph', function() {
 
   describe('.get', function() {
 
-    it ('should work as a shorthand for .all', function() {
+    it ('should work as a shorthand for .find', function() {
       return Promise.all
-        ( [ Authored.all(1, 2)
+        ( [ Authored.find(1, 2)
           , Authored.get(1, 2)
-          , Authored.inv.all(2, 1)
+          , Authored.inv.find(2, 1)
           , Authored.inv.get(2, 1)
           ] )
         .then(([[e1], e2, [e3], e4]) => {
@@ -47,8 +47,8 @@ describe('Radgraph', function() {
     })
 
     it ('should be able to query by time', function() {
-      return Rated.all(1, 2)
-        .then(r => r[1].created_at)
+      return Rated.find(1, 2)
+        .then(r => r[1].time)
         .then(time => Rated.get(1, 2, { time }))
         .then(r => {
           assert.notDeepProperty(r, 'data.rating')

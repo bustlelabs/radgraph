@@ -13,10 +13,10 @@ describe ('Radgraph', function() {
     return resetGraph().then(done)
   })
 
-  describe('.all', function() {
+  describe('.find', function() {
 
     it ('should return all results', function() {
-      return Rated.all(4, 6)
+      return Rated.find(4, 6)
         .then(r => {
           assert.lengthOf(r, 3)
           assert.notDeepEqual(r[0], r[1])
@@ -34,8 +34,8 @@ describe ('Radgraph', function() {
 
     it ('should work on inverse edges', function() {
       return Promise.all
-        ( [ Authored.all(1, 2)
-          , Authored.inv.all(2, 1)
+        ( [ Authored.find(1, 2)
+          , Authored.inv.find(2, 1)
           ] )
         .then(([r1, r2]) => {
           assert.lengthOf(r1, 1)
@@ -50,7 +50,7 @@ describe ('Radgraph', function() {
     })
 
     it ('should take both limit and offset', function() {
-      return Rated.all(4, 6, { offset: 1, limit: 1 })
+      return Rated.find(4, 6, { offset: 1, limit: 1 })
         .then(r => {
           assert.lengthOf(r, 1)
           assert.deepPropertyVal(r, '0.data.rating', 2)
@@ -59,7 +59,7 @@ describe ('Radgraph', function() {
     })
 
     it ('should handle the empty case', function() {
-      return Rated.all(1, 5)
+      return Rated.find(1, 5)
         .then(r => {
           assert.lengthOf(r, 0)
         })
