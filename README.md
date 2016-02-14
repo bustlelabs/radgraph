@@ -77,11 +77,11 @@ This is primarily a convenience method for inverse queries on one-to-many relati
 Authored.inv.of(5)
   .then(console.log)
 // => { type: 'AuthoredBy'
-      , from: 5
-      , to: 3
-      , time: 1455487422000
-      , data: { ... }
-      }
+//    , from: 5
+//    , to: 3
+//    , time: 1455487422000
+//    , data: { ... }
+//    }
 ```
 
 ## `.get(from, to, { time })`
@@ -92,26 +92,26 @@ Retrieves an edge between two nodes. If no `{ time }` parameter is specified, th
 Authored.get(1, 2)
   .then(console.log)
 // => { type: 'Authored'
-      , from: 1
-      , to: 2
-      , time: 1455487876000
-      , data: { status: 0 }
-      }
+//    , from: 1
+//    , to: 2
+//    , time: 1455487876000
+//    , data: { status: 0 }
+//    }
 Authored.inv.get(2, 1)
 // => { type: 'AuthoredBy'
-      , from: 2
-      , to: 1
-      , time: 1455487876000
-      , data: { status: 0 }
-      }
+//    , from: 2
+//    , to: 1
+//    , time: 1455487876000
+//    , data: { status: 0 }
+//    }
 Authored.get(1, 2, { time: 1455487844400 })
   .then(console.log)
 // => { type: 'Authored'
-      , from: 1
-      , to: 2
-      , time: 1455487844400
-      , data: { status: 1 }
-      }
+//    , from: 1
+//    , to: 2
+//    , time: 1455487844400
+//    , data: { status: 1 }
+//    }
 ```
 
 ## `.find(from, to, { limit = 30, offset = 0})`
@@ -138,30 +138,30 @@ Returns the new edge.
 Authored.add(4, 5)
   .then(console.log)
 // => { type: 'Authored'
-      , from: 4
-      , to: 4
-      , time: 1455488127000
-      }
+//    , from: 4
+//    , to: 4
+//    , time: 1455488127000
+//    }
 
 Authored.add(6, 7, { status: 4, tags: [ "WizWearsCoolPants", "waves" ] })
   .then(console.log)
 // => { type: 'Authored'
-      , from: 6
-      , to: 7
-      , time: 1455488198000
-      , data:
-        { status: 4
-        , tags: [ "WizWearsCoolPants", "waves" ]
-        }
-      }
+//    , from: 6
+//    , to: 7
+//    , time: 1455488198000
+//    , data:
+//      { status: 4
+//      , tags: [ "WizWearsCoolPants", "waves" ]
+//      }
+//    }
 
 Authored.inv.add(10, 1)
   .then(console.log)
 // => { type: 'AuthoredBy'
-      , from: 10
-      , to: 1
-      , time: 1455488252000
-      }
+//    , from: 10
+//    , to: 1
+//    , time: 1455488252000
+//    }
 ```
 
 ## `.set(from, to, [attributes])`
@@ -174,24 +174,24 @@ Returns the updated edge, or `null` if no such edge exists to update.
 Authored.set(1, 3, { status: 1 })
   .then(console.log)
 // => { type: 'Authored'
-      , from: 1
-      , to: 3
-      , time: 1455487479000
-      , data:
-        { status: 1
-        , category: "a$ap"
-        , tags: ["rick owens", "cdg heart meme"]
-        }
-      }
+//    , from: 1
+//    , to: 3
+//    , time: 1455487479000
+//    , data:
+//      { status: 1
+//      , category: "a$ap"
+//      , tags: ["rick owens", "cdg heart meme"]
+//      }
+//    }
 
 Authored.inv.set(2, 1, { status: 2, time: 1455487401000 })
   .then(console.log)
 // =>  { type: 'AuthoredBy'
-       , from: 2
-       , to: 1
-       , time: 1455487401000
-       , data: { status: 2 }
-       }
+//     , from: 2
+//     , to: 1
+//     , time: 1455487401000
+//     , data: { status: 2 }
+//     }
 
 Authored.set(9999, 9999, { time: -1 })
   .then(console.log)
