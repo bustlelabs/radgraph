@@ -35,6 +35,19 @@ const clippedSchema =
     }
   }
 
+const errthangSchema =
+  { name: 'Errthang'
+  , from: 'User'
+  , to: 'Post'
+  , properties:
+    { object: "object"
+    , array: "array"
+    , integer: "integer"
+    , number: "number"
+    , string: "string"
+    }
+  }
+
 // objects:
 export const users =
   [ undefined
@@ -60,8 +73,9 @@ export const posts =
 
 // associations:
 export const Authored = Radgraph(authoredSchema, null, redisOpts)
-export const Clipped  = Radgraph(clippedSchema, null, redisOpts)
-export const Rated    = Radgraph(ratedSchema, null, redisOpts)
+export const Clipped  = Radgraph(clippedSchema,  null, redisOpts)
+export const Rated    = Radgraph(ratedSchema,    null, redisOpts)
+export const Errthang = Radgraph(errthangSchema, null, redisOpts)
 
 export function serial(promises) {
   promises[0] = promises[0]()
@@ -98,6 +112,7 @@ export function resetGraph() {
         , () => Promise.delay(2)
         , () => Rated.add(3, 6, { rating: 1, note: "fooooo" })
 
+      // Add clipped relationships
         , () => Clipped.add(2, 1, { title: "Bar" })
         , () => Promise.delay(2)
         , () => Clipped.add(2, 1, { title: "bar" })
@@ -107,6 +122,16 @@ export function resetGraph() {
         , () => Clipped.add(3, 8, { title: "Eight" })
         , () => Clipped.add(3, 9, { title: "Nine" })
 
+      // Add errthang relationships
+        , () => Errthang.add
+                  ( 1 , 1
+                  , { object: { foo: "foo", bar: 1 }
+                    , array: [ 100, 100.5, "string", [ 1, 2, 3 ], { foo: "foo", bar: 2 } ]
+                    , integer: 123
+                    , number: 45.6
+                    , string: "foo"
+                    }
+                  )
         ]
       ).return()
   })

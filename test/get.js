@@ -51,8 +51,8 @@ describe('Radgraph', function() {
         .then(r => r[1].time)
         .then(time => Rated.get(1, 2, { time }))
         .then(r => {
-          assert.notDeepProperty(r, 'data.rating')
-          assert.notDeepProperty(r, 'data.note')
+          assert.isUndefined(r.data.rating)
+          assert.isUndefined(r.data.note)
         })
     })
 

@@ -41,19 +41,23 @@ export function invertSchema(schema, inverse) {
          }
 }
 
-export function Deserialize(schema) {
+export function Deserialize(schema, props) {
   return function(attributes) {
     return _.mapValues
-      ( attributes
+      ( _.zipObject(props, attributes)
       , ( value, key ) => {
+          if (!value)
+            return undefined
           const prop = schema.properties[key]
-          const type = prop && prop.type
+          const type = prop && prop.type || prop
           if (type === 'array' || type === 'object')
             return (typeof value === 'string')
               ? JSON.parse(value)
-              : value
-          else if (type === 'integer')
+              : undefined
+          if (type === 'integer')
             return parseInt(value, 10)
+          if (type === 'number')
+            return parseFloat(value, 10)
           return value
         }
       )

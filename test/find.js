@@ -54,7 +54,7 @@ describe ('Radgraph', function() {
         .then(r => {
           assert.lengthOf(r, 1)
           assert.deepPropertyVal(r, '0.data.rating', 2)
-          assert.notDeepProperty(r, '0.data.note')
+          assert.isUndefined(r[0].data.note)
         })
     })
 

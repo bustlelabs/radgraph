@@ -27,7 +27,7 @@ describe ('Radgraph', function() {
         .then(([e1, e2]) => {
           assert.deepPropertyVal(e1, 'data.title', "Baz")
           assert.deepPropertyVal(e1, 'data.description', "desc")
-          assert.notDeepProperty(e2, 'data.description')
+          assert.isUndefined(e2.data.description)
         })
     })
 

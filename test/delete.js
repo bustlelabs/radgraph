@@ -74,8 +74,8 @@ describe ('Radgraph', function() {
           const [e1, e2] = r
           assert.deepPropertyVal(e1, 'data.rating', 1)
           assert.deepPropertyVal(e1, 'data.note', 'fooooo')
-          assert.notDeepProperty(e2, 'data.rating')
-          assert.notDeepProperty(e2, 'data.note')
+          assert.isUndefined(e2.data.rating)
+          assert.isUndefined(e2.data.note)
         })
     })
 

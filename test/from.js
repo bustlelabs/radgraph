@@ -83,14 +83,14 @@ describe ('Radgraph', function() {
       .then(r => {
         _.forEach(r, e => assert.property(e, 'data'))
 
-        assert.notDeepProperty(r[2], 'data.rating')
-        assert.notDeepProperty(r[2], 'data.note')
+        assert.isUndefined(r[2].data.rating)
+        assert.isUndefined(r[2].data.note)
 
         assert.deepPropertyVal(r[1], 'data.rating', 5)
         assert.deepPropertyVal(r[1], 'data.note', 'foo')
 
         assert.deepPropertyVal(r[0], 'data.rating', 3)
-        assert.notDeepProperty(r[0], 'data.note')
+        assert.isUndefined(r[0].data.note)
 
       })
     })

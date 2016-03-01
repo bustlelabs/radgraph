@@ -18,7 +18,8 @@ function Radgraph (schema, hooks, redisOpts) {
 
   const redis = new Redis(redisOpts)
 
-  const deserialize = Deserialize(schema)
+  const props = _.keys(schema.properties)
+  const deserialize = Deserialize(schema, props)
 
   const type = schema.name
 
@@ -230,7 +231,7 @@ function Radgraph (schema, hooks, redisOpts) {
 
   // Edge operations
   function getAttrs(p, from, to, time) {
-    return p.hgetall(`${edgeKey(from,to)}:${time}`)
+    return p.hmget(`${edgeKey(from,to)}:${time}`, props)
   }
   function setAttrs(p, from, to, time, attributes) {
     return p.hmset(`${edgeKey(from,to)}:${time}`, serialize(attributes))
@@ -242,8 +243,3 @@ function Radgraph (schema, hooks, redisOpts) {
 }
 
 export default Radgraph
-
-// produces an inverse edge relationship
-export function invert(schema) {
-
-}
