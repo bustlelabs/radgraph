@@ -15,7 +15,7 @@ export function ParseAdj(type, from) {
     return val &&
       { type
       , from
-      , to: parseInt(s[0], 10)
+      , to: s[0]
       , time: s[1]
       }
   }

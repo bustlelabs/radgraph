@@ -30,8 +30,8 @@ describe ('Radgraph', function() {
         .then(r => {
           assert.lengthOf(r, 2)
           const [e1, e2] = r
-          assert.propertyVal(e1, 'to', 4)
-          assert.propertyVal(e2, 'to', 2)
+          assert.propertyVal(e1, 'to', '4')
+          assert.propertyVal(e2, 'to', '2')
           assert.notDeepProperty(e2, 'rating')
           assert.notDeepProperty(e2, 'note')
         })
@@ -48,8 +48,8 @@ describe ('Radgraph', function() {
       return Clipped.from(3)
         .then(r => {
           assert.lengthOf(r, 2)
-          assert.deepPropertyVal(r, '0.to', 9)
-          assert.deepPropertyVal(r, '1.to', 7)
+          assert.deepPropertyVal(r, '0.to', '9')
+          assert.deepPropertyVal(r, '1.to', '7')
         })
     })
 

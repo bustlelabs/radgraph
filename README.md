@@ -3,7 +3,7 @@
 Based loosely on Facebook's [TAO spec](https://cs.uwaterloo.ca/~brecht/courses/854-Emerging-2014/readings/data-store/tao-facebook-distributed-datastore-atc-2013.pdf).
 
 Radgraph is a simple object association service designed primarily to complement [Radredis](https://github.com/bustlelabs/radredis).
-However, the only assumption Radgraph makes about your object store is that each object has a unique integer id, and can be used for arbitrary integer associations.
+However, the only assumption Radgraph makes about your object store is that each object has a unique primary key, and can be used for arbitrary key associations.
 
 Radgraph allows you to store associations between integers, automatically handles inverse association, and can optionally attach data to associations.
 

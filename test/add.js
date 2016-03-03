@@ -93,9 +93,9 @@ describe ('Radgraph', function() {
         .then(r => {
           assert.lengthOf(r, 3)
           const [e1, e2, e3] = r
-          assert.propertyVal(e1, 'to', 3)
-          assert.propertyVal(e2, 'to', 6)
-          assert.propertyVal(e3, 'to', 6)
+          assert.propertyVal(e1, 'to', '3')
+          assert.propertyVal(e2, 'to', '6')
+          assert.propertyVal(e3, 'to', '6')
         })
 
     })

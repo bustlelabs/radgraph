@@ -43,7 +43,7 @@ describe ('Radgraph', function() {
           const e = r[0]
           assert.propertyVal(e, 'type', 'AuthoredBy')
           assert.propertyVal(e, 'from', 4)
-          assert.propertyVal(e, 'to'  , 2)
+          assert.propertyVal(e, 'to'  , '2')
         })
     })
 
@@ -51,7 +51,7 @@ describe ('Radgraph', function() {
       return Authored.from(3, { limit: 2 })
         .then(r => {
           assert.lengthOf(r, 2)
-          assert.propertyVal(r[1], 'to', 6)
+          assert.propertyVal(r[1], 'to', '6')
         })
     })
 
@@ -59,7 +59,7 @@ describe ('Radgraph', function() {
       return Authored.from(2, { offset: 1 })
       .then(r => {
         assert.lengthOf(r, 1)
-          assert.propertyVal(r[0], 'to', 3)
+          assert.propertyVal(r[0], 'to', '3')
       })
     })
 
@@ -67,7 +67,7 @@ describe ('Radgraph', function() {
       return Authored.from(1, { offset: 1, limit: 3 })
       .then(r => {
         assert.lengthOf(r, 3)
-        assert.propertyVal(r[2], 'to', 2)
+        assert.propertyVal(r[2], 'to', '2')
       })
     })
 
