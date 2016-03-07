@@ -15,7 +15,7 @@ const redisOpts = { db: 15, keyPrefix: 'your-app:' }
 const transforms = {} // not yet implemented
 
 const schema =
-  { title: "Authored"
+  { name: "Authored"
   , inverse: "AuthoredBy"
   , from: "User"
   , to: "Post"
