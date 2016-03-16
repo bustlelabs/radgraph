@@ -1,74 +1,119 @@
 import _ from 'lodash'
 
-export function head(arr) {
-  return arr && arr[0]
-}
+// common functions
 
-export function response([err, val]) {
-  if (err) throw err
-  return val
-}
+export const identity = x => x
 
-export function ParseAdj(type, from) {
-  return function(val) {
-    const s = val.split(':')
-    return val &&
-      { type
-      , from
-      , to: s[0]
-      , time: s[1]
-      }
-  }
-}
+export const head = x => x && x[0]
+export const OR   = (r, l) => r || l
+export const AND  = (r, l) => r && l
 
-export function ParseFullAdj(type, from, to) {
-  return function (time) {
-    return time &&
-      { type
-      , from
-      , to
-      , time
-      }
-  }
-}
+export const fnMap  = fn => xs => _.map(xs, fn)
+export const fnHead = fn => xs => xs && fn(xs[0])
 
-export function invertSchema(schema, inverse) {
-  return { name: schema.inverse
-         , from: schema.to
-         , to: schema.from
-         , _inverse: inverse
-         , properties: schema.properties
-         }
-}
+export const indexJob =
 
-export function Deserialize(schema, props) {
-  return function(attributes) {
-    return _.mapValues
-      ( _.zipObject(props, attributes)
-      , ( value, key ) => {
-          if (!value)
-            return undefined
-          const prop = schema.properties[key]
-          const type = prop && prop.type || prop
-          if (type === 'array' || type === 'object')
-            return (typeof value === 'string')
-              ? JSON.parse(value)
-              : undefined
-          if (type === 'integer')
-            return parseInt(value, 10)
-          if (type === 'number')
-            return parseFloat(value, 10)
-          return value
-        }
+  ( keyspace
+  , { defaultProps
+    , deserializer
+    , normalize
+    }
+  ) =>
+
+    ( { index = 'created_at'
+      , offset = 0
+      , limit = 30
+      , properties = defaultProps
+      } = {}
+    ) =>
+
+      normalize(properties).do(properties =>
+        [ 'idxrange'
+        , [ `${keyspace}:indices:${index}`, properties, limit, offset ]
+        , fnMap(deserializer(properties))
+        ]
       )
+
+export function wrapExec(G, jobs) {
+  return _(jobs)
+    .mapValues(j => (...args) => G.exec(j(...args)))
+    .assign({ job: jobs })
+    .value()
+}
+
+// Field normalization
+
+export function parsers(props, system) {
+
+  // TODO: normalize props
+
+  const type = p => props[p]
+
+  const parse =
+
+    { defaultProps: _(props)
+        .keys()
+        .filter(k => !~system.indexOf(k))   // maintains invariant
+        .concat(system)                     // of normalized key ordering
+        .value()
+
+    , deserializer(properties) {
+        return attrs =>
+            _.reduce(attrs, OR, null) // confirm attrs is not a null list
+         && _(properties)
+            .zipObject(attrs)         // zip object
+            .omitBy(_.isNull)         // remove null entries
+            .mapValues                // parse each field
+              ( (v, k) => {
+                  const t = type(k)
+                  // if (!t) return null // <- doesn't hurt, but no need if you don't try and break things
+                  if (t === 'json')
+                    return JSON.parse(v)
+                  if (t === 'integer')
+                    return parseInt(v, 10)
+                  if (t === 'number')
+                    return parseFloat(v, 10)
+                  if (t === 'boolean')
+                    return (v === 'true')
+                  return v
+                }
+              )
+            .value()
+      }
+
+    // creates an execution context with serialized attributes and serialized keys
+    // think of it as a synchronous functor/monad
+    // serialize(attrs).do((attrs, keys) => [ ...job ])
+    , serialize(attrs) {
+        const ks = []
+        const a = _.flatMap
+          ( attrs
+          , (v, k) => type(k)
+            ? ( ks.push(k)
+              , [ k
+                , (type(k) === 'json')
+                  ? JSON.stringify(v)
+                  : v
+                ]
+              )
+            : [] // not a valid field, ignore
+          )
+        return { do: fn => fn(a, _normalize(ks)) }
+      }
+
+    // creates an execution context with normalized keys
+    // think of it as a synchronous functor/monad
+    , normalize(attrs) {
+        return { do: fn => fn(_normalize(attrs)) }
+      }
+    }
+
+  return parse
+
+  function _normalize(attrs) {
+    return (attrs === 'all')
+      ? parse.defaultProps
+      : _.concat(attrs, system)
   }
 }
 
-export function serialize(attributes) {
-  return _.mapValues
-    ( attributes
-    , val => _.isObject(val)
-        ? JSON.stringify(val)
-        : val
-    )
-}
