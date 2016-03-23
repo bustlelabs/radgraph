@@ -45,11 +45,11 @@ end
 `
 
 const SET_IDX = (index, val) => `
-redis.call("ZADD", KEYS[1]..":indices:${index}", ${val}, id)
+redis.call("ZADD", type..":indices:${index}", ${val}, id)
 `
 
 const REM_IDX = index => `
-redis.call("ZREM", KEYS[1]..":indices:${index}", id)
+redis.call("ZREM", type..":indices:${index}", id)
 `
 
 // scripts
@@ -64,8 +64,7 @@ redis.call("HMSET", id, unpack(ARGV))
 ${SET_IDX("created_at", "time")}
 ${SET_IDX("updated_at", "time")}
 
-return vals
-`
+return vals`
 
 const vset = `
 local time = table.remove(ARGV)
@@ -95,9 +94,9 @@ return cur
 `
 
 export const scripts =
-  { vadd   : { numberOfKeys: 1, lua: vadd }
-  , vset   : { numberOfKeys: 1, lua: vset }
-  , vrem   : { numberOfKeys: 1, lua: vrem }
+  { vadd   : { numberOfKeys: 0, lua: vadd }
+  , vset   : { numberOfKeys: 0, lua: vset }
+  , vrem   : { numberOfKeys: 0, lua: vrem }
   }
 
 // NOTE: this is a placeholder implementation
@@ -136,7 +135,7 @@ export default function (G, type, fields) {
     , create: attrs =>
         serialize(attrs).do((attrs, keys) =>
           [ 'vadd'
-          , [ keyspace, attrs, type, +Date.now() ]
+          , [ attrs, type, +Date.now() ]
           , deserializer(keys)
           ]
         )
@@ -144,14 +143,14 @@ export default function (G, type, fields) {
     , update: (id, attrs) =>
         serialize(attrs).do((attrs, keys) =>
           [ 'vset'
-          , [ keyspace, attrs, id, type, +Date.now() ]
+          , [ attrs, id, type, +Date.now() ]
           , deserializer(keys)
           ]
         )
 
     , delete: id =>
         [ 'vrem'
-        , [ keyspace, defaultProps, id, type ]
+        , [ defaultProps, id, type ]
         , deserializer(defaultProps)
         ]
 

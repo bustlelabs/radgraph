@@ -3,7 +3,7 @@ import { assert } from 'chai'
 import Promise    from 'bluebird'
 import Radgraph   from '../src'
 
-export const G = new Radgraph
+export const G = Radgraph
   ( { db: 2
     }
   )

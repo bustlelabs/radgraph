@@ -1,6 +1,6 @@
 {
   "name": "radgraph",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple, opinionated, object association API",
   "main": "lib/index.js",
   "scripts": {
@@ -21,13 +21,19 @@
   "devDependencies": {
     "babel-cli": "^6.5.1",
     "babel-core": "^6.5.2",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.5.2",
-    "babel-preset-es2015": "^6.5.0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.6.3",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-preset-stage-1": "^6.5.0",
     "chai": "^3.5.0",
     "eslint": "^2.0.0",
-    "mocha": "^2.4.5"
+    "graphql": "^0.4.18",
+    "mocha": "^2.4.5",
+    "radql": "^0.1.9"
   },
   "dependencies": {
+    "babel-core": "^6.7.4",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.7.4",
     "bluebird": "^3.3.0",
     "ioredis": "^1.15.0",
     "lodash": "^4.3.0"

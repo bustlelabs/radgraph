@@ -80,14 +80,16 @@ local to   = table.remove(ARGV)
 local type = table.remove(ARGV)
 local from = table.remove(ARGV)
 
+local edge_key = ${EDGE_KEY}
+
 ${VALS("from", "type", "to", "time", "time")}
 
-redis.call("DEL",   ${EDGE_KEY}, unpack(ARGV))
-redis.call("HMSET", ${EDGE_KEY}, unpack(ARGV))
+redis.call("DEL",   edge_key)
+redis.call("HMSET", edge_key, unpack(ARGV))
 ${FROM_SET}
 ${TO_SET}
-${SET_IDX("created_at", EDGE_KEY)}
-${SET_IDX("updated_at", EDGE_KEY)}
+${SET_IDX("created_at", "edge_key")}
+${SET_IDX("updated_at", "edge_key")}
 
 return vals`
 
