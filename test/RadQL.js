@@ -80,7 +80,33 @@ describe ('RadQL', function() {
       }
     }`
     return test(q, { user: { name: "Eve", role: 1 } })
+  })
 
+  it ('should delete vertices', function() {
+    const q = `mutation {
+      API: API__deleteUser(id: "1") {
+        name
+        role
+        dominates { name }
+      }
+    }`
+    return test
+      ( q
+      , { name: "Eve"
+        , role: 1
+        , dominates:
+          [ { name: "David" }
+          , { name: "Claire" }
+          , { name: "Bob" }
+          ]
+        }
+      )
+
+  })
+
+  it ('should persist deletions', function() {
+    const q = `{ API { user(id: 1) { name, role } } }`
+    return test(q, { user: null })
   })
 
 })

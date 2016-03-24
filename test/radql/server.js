@@ -96,6 +96,13 @@ class API extends RadAPI {
       .then(u => u.name())
   }
 
+  @ mutation("User")
+  @ args({ id: "id!" })
+  deleteUser({ id }) {
+    return this.e$.User({ id })
+      .then( u => u && u._delete() )
+  }
+
 }
 
 const { serve } = RadQL( [ API ], [ User ], [ G.Source ] )

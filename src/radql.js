@@ -133,6 +133,12 @@ export function VertexType(G, name, jobs) {
         .return(this)
     }
 
+    _delete() {
+      return this.e$[G.name][name].delete(this._id)
+        .then(attrs => this._attrs = _.mapValues(attrs, Promise.resolve))
+        .return(this)
+    }
+
   }
 
   return Type
