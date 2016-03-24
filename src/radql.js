@@ -101,25 +101,36 @@ export function VertexType(G, name, jobs) {
     static args = { id: "id!" }
 
     // fetch by id
-    static get(root, { id }) {
-      return root.e$[G.name][name].get(id, [])
+    static get(root, attrs) {
+      // vertex confirmed, bypass check
+      if (attrs.type || attrs.created_at || attrs.updated_at)
+        return new this(root, attrs)
+      // confirm vertex exists
+      return root.e$[G.name][name].get(attrs.id, [])
         .then(attrs => attrs && new this(root, attrs))
-    }
-
-    // fetch from attributes
-    static from(root, attrs) {
-      return new this(root, attrs)
     }
 
     constructor(root, attrs) {
       super(root)
       this._id    = attrs.id
       this._attrs = _.mapValues(attrs, Promise.resolve)
+      this._difs  = {}
     }
 
     attr(p) {
       return this._attrs[p]
         || ( this._attrs[p] = this.e$[G.name][name].attrs(this._id, p) )
+    }
+
+    setAttr(p, v) {
+      this._difs[p]  = v
+      this._attrs[p] = Promise.resolve(v)
+    }
+
+    _save() {
+      return this.e$[G.name][name].update(this._id, this._difs)
+        .then(attrs => _.assign(this.attrs, _.mapValues(attrs, Promise.resolve)))
+        .return(this)
     }
 
   }

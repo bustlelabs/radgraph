@@ -63,4 +63,24 @@ describe ('RadQL', function() {
     return test(q, r)
   })
 
+  it ('should perform mutations', function() {
+    const q = `mutation {
+      API: API__changeName(id: "1", name: "Eve")
+    }`
+    return test(q, "Eve")
+  })
+
+  it ('should persist mutations', function() {
+    const q = `{
+      API {
+        user(id: 1) {
+          name
+          role
+        }
+      }
+    }`
+    return test(q, { user: { name: "Eve", role: 1 } })
+
+  })
+
 })

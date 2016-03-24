@@ -47,6 +47,13 @@ class User extends UserVertex.Type {
       .map(id => this.e$.User({ id }))
   }
 
+  @ mutation("User")
+  @ args({ name: "string!" })
+  changeName({ name }) {
+    this.setAttr("name", name)
+    return this._save()
+  }
+
 }
 
 const BDSM = G.Edge( "User", "Dominates", "User" )
@@ -79,6 +86,14 @@ class API extends RadAPI {
       )
 
    )
+  }
+
+  @ mutation("string")
+  @ args({ id: "id!", name: "string!" })
+  changeName({ id, name }) {
+    return this.e$.User({ id })
+      .then(u => u && u.changeName({ name }))
+      .then(u => u.name())
   }
 
 }
