@@ -35,6 +35,19 @@ export const indexJob =
         ]
       )
 
+export const attrs = (key, props, { deserialize, deserializer }) =>
+  _.isArray(props)
+  ? [ 'hmget'
+    , [ key, props ]
+    , deserializer(props)
+    ]
+  : [ 'hget'
+    , [ key, props ]
+    // sorry !!
+    // I'll come up with something more elegant later
+    , v => deserialize(v, props)
+    ]
+
 function wrapRQL(G, jobs) {
   return _.mapValues
     ( jobs
@@ -58,7 +71,7 @@ export function wrapExec(G, jobs) {
 
 // Field normalization
 
-export function parsers(props, system) {
+export function parsers(props, system = []) {
 
   // TODO: normalize props
 
@@ -72,27 +85,27 @@ export function parsers(props, system) {
         .concat(system)                     // of normalized key ordering
         .value()
 
+    , deserialize(v, k) {
+        const t = type(k)
+        // if (!t) return null // <- doesn't hurt, but no need if you don't try and break things
+        if (t === 'json')
+          return JSON.parse(v)
+        if (t === 'integer')
+          return parseInt(v, 10)
+        if (t === 'number')
+          return parseFloat(v, 10)
+        if (t === 'boolean')
+          return (v === 'true')
+        return v
+      }
+
     , deserializer(properties) {
         return attrs =>
             _.reduce(attrs, OR, null) // confirm attrs is not a null list
          && _(properties)
             .zipObject(attrs)         // zip object
             .omitBy(_.isNull)         // remove null entries
-            .mapValues                // parse each field
-              ( (v, k) => {
-                  const t = type(k)
-                  // if (!t) return null // <- doesn't hurt, but no need if you don't try and break things
-                  if (t === 'json')
-                    return JSON.parse(v)
-                  if (t === 'integer')
-                    return parseInt(v, 10)
-                  if (t === 'number')
-                    return parseFloat(v, 10)
-                  if (t === 'boolean')
-                    return (v === 'true')
-                  return v
-                }
-              )
+            .mapValues(parse.deserialize)
             .value()
       }
 

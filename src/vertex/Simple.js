@@ -17,6 +17,7 @@ import _ from 'lodash'
 
 import { identity
        , indexJob
+       , attrs
        , wrapExec
        , parsers
        } from '../utils'
@@ -125,6 +126,8 @@ export default function (G, type, fields) {
   const jobs =
 
     { all: indexJob(keyspace, parser)
+
+    , attrs: (id, properties) => attrs(id, properties, parser)
 
     , get: (id, properties = defaultProps) =>
         normalize(properties).do(properties =>

@@ -2,6 +2,11 @@ import Redis   from 'ioredis'
 import _       from 'lodash'
 
 import RadQL   from './radql'
+
+import { attrs
+       , parsers
+       } from './utils'
+
 import { IDX_RANGE } from './macros'
 
 import { scripts as vertexScripts
@@ -45,10 +50,28 @@ export default function (name, port, host, options) {
 
   let rqlSource = null
 
+  const Vparser = parsers
+    ( { id:         'integer'
+      , created_at: 'integer'
+      , updated_at: 'integer'
+      , type:       'string'
+      }
+    )
+
+  const Eparser = parsers
+    ( { from:       'string'
+      , type:       'string'
+      , to:         'string'
+      , created_at: 'integer'
+      , updated_at: 'integer'
+      }
+    )
+
   const G =
 
     { redis
-    , job: {}
+    , job: { V: (id, properties) => attrs(id, properties, Vparser)
+           }
     , name
 
     // TODO: optimize identity calls to

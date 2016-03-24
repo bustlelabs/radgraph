@@ -21,8 +21,34 @@ export default function(G) {
       wrapJobs(this, this, G.job)
     }
 
-    _fetch(jobs, opts, n) {
-      // TODO: introduce and group ATTR jobs
+    _fetch(jobs, { SKIP_ATTR_GROUPING } = {}, n) {
+
+      // TODO: benchmark this and see if it's worth it
+      // this chunk of code shoves more computation (and complexity) into the lambda function
+      // in exchange for smaller redis pipelines
+
+      // group HGETs into HMGETs
+      if (!SKIP_ATTR_GROUPING) {
+        const HGETs = _.remove(jobs, j => j.req.job[0] === "hget")
+        const HMGETs = _(HGETs)
+          .groupBy('req.job.1.0')
+          .map((v, k) =>
+            ( { req:
+                { job:
+                  [ 'hmget'
+                  , [ k, _.map(v, 'req.job.1.1') ]
+                  , vals => _.map(vals, (val, idx) => v[idx].req.job[2](val))
+                  ]
+                }
+              , resolve: vals => _.forEach(vals, (val, idx) => v[idx].resolve(val))
+              , reject:  err  => _.forEach(v, j => j.reject(err))
+              }
+            )
+          )
+          .value()
+        jobs = _.concat(jobs, HMGETs)
+      }
+
       pipe(this.redis.pipeline(), _.map(jobs, 'req.job'))
         .exec()
         .map(
@@ -74,9 +100,15 @@ export function VertexType(G, name, jobs) {
     static key({ id }) { return id }
     static args = { id: "id!" }
 
+    // fetch by id
     static get(root, { id }) {
-      return root.e$[G.name][name].get(id)
+      return root.e$[G.name][name].get(id, [])
         .then(attrs => attrs && new this(root, attrs))
+    }
+
+    // fetch from attributes
+    static from(root, attrs) {
+      return new this(root, attrs)
     }
 
     constructor(root, attrs) {
@@ -85,8 +117,9 @@ export function VertexType(G, name, jobs) {
       this._attrs = _.mapValues(attrs, Promise.resolve)
     }
 
-    attr(name) {
-      return this._attrs[name]
+    attr(p) {
+      return this._attrs[p]
+        || ( this._attrs[p] = this.e$[G.name][name].attrs(this._id, p) )
     }
 
   }
