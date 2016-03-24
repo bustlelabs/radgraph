@@ -1,37 +1,24 @@
-import _              from 'lodash'
-import Promise        from 'bluebird'
-import Redis          from 'ioredis'
+import _       from 'lodash'
+import Promise from 'bluebird'
+import Redis   from 'ioredis'
+
 import { RadService
        , RadType
        } from 'radql'
 
-import Radgraph      from './index'
-
-export default function(name, port, host, options) {
-
-  if (port.keyPrefix || (options && options.keyPrefix))
-    throw new Error("Key prefixes are not supported yet")
-
-  const G = Radgraph(port, host, options)
+export default function(G) {
 
   // create source
   class Source extends RadService {
 
-    static _name = name
-
-    static Vertex(...args) {
-      return wrapVertex(Source, G.Vertex(...args))
-    }
-
-    static Edge(name, ...args) {
-      return wrapEdge(Source, name, G.Edge(...args))
-    }
+    static _name = G.name
+    static graph = G
 
     constructor(root) {
       super(root)
-      // TODO: consider instantiating new instance per session
       this.radgraph = G
       this.redis    = G.redis
+      wrapJobs(this, this, G.job)
     }
 
     _fetch(jobs, opts, n) {
@@ -51,6 +38,23 @@ export default function(name, port, host, options) {
 
 }
 
+function wrapJobs(root, ctx, jobs) {
+  _.forEach
+    ( jobs
+    , function(j, name) {
+        if(_.isFunction(j)) {
+          ctx[name] = (...a) => {
+            return root.e$.fetch
+              ({ src: root, job: j(...a) })
+          }
+        } else {
+          ctx[name] = {}
+          wrapJobs(root, ctx[name], j)
+        }
+      }
+    )
+}
+
 function pipe(line, jobs) {
   return _.reduce
     ( jobs
@@ -60,25 +64,20 @@ function pipe(line, jobs) {
     )
 }
 
-function exec(e$, src, job) {
-  return e$.fetch({ src, job })
-}
+// for now, this only handles vertex types
+// edge types will come later
 
-function wrapVertex(source, model) {
-
-  const job = model.job
-
-  const s   = source._name
+export function VertexType(G, name, jobs) {
 
   class Type extends RadType {
 
-    static model = model
+    static key({ id }) { return id }
+    static args = { id: "id!" }
+
     static get(root, { id }) {
-      return exec(root.e$, root.e$[s], job.get(id))
+      return root.e$[G.name][name].get(id)
         .then(attrs => attrs && new this(root, attrs))
     }
-
-    static key({ id }) { return id }
 
     constructor(root, attrs) {
       super(root)
@@ -92,48 +91,6 @@ function wrapVertex(source, model) {
 
   }
 
-  _.forEach
-    ( job
-    , ( j, name ) => (name === 'get')
-        || ( Type[name] = (root, ...args) =>
-               exec(root.e$, root.e$[s], j(...args))
-           )
-    )
-
   return Type
-
-}
-
-function wrapEdge(source, name, model) {
-
-  const job = model.job
-  const s   = source._name
-
-  class Service extends RadService {
-
-    static _name = name
-    static model = model
-
-    constructor(root) {
-      super(root)
-      this._src = this.e$[s]
-    }
-
-  }
-
-  _.forEach
-    ( job
-    , ( j, name ) =>
-        Object.defineProperty
-          ( Service.prototype
-          , name
-          , { value(...args) {
-                return exec(this.e$, this._src, j(...args))
-              }
-            }
-          )
-    )
-
-  return Service
 
 }

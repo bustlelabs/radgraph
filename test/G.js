@@ -4,7 +4,8 @@ import Promise    from 'bluebird'
 import Radgraph   from '../src'
 
 export const G = Radgraph
-  ( { db: 2
+  ( "RadgraphTest"
+  , { db: 2
     }
   )
 

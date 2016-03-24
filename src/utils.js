@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { Type } from './radql'
 
 // common functions
 
@@ -34,7 +35,21 @@ export const indexJob =
         ]
       )
 
+function wrapRQL(G, jobs) {
+  return _.mapValues
+    ( jobs
+    , j =>
+        ( ctx, ...args ) =>
+          ctx.e$.fetch
+            ( { src: ctx.e$[G.name]
+              , job: j(...args)
+              }
+            )
+    )
+}
+
 export function wrapExec(G, jobs) {
+  let radType = null
   return _(jobs)
     .mapValues(j => (...args) => G.exec(j(...args)))
     .assign({ job: jobs })

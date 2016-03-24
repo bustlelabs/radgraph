@@ -134,11 +134,6 @@ describe ('Array Edge', function() {
       .then(es => assert.deepEqual(es, [ null, null ]))
     })
 
-    it ('should not affect indices', function() {
-      return E.all({ index: 'updated_at' })
-      .then(es => assert.deepEqual(es, [ e3, e4, e1, e2 ]))
-    })
-
     it ('should update forward adjacency', function() {
       return E.from(1, 0, 5, ['foo', 'bar'])
       .then(es => assert.deepEqual(es, [ e2, null, e4, e1, e3, null ]))

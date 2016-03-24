@@ -1,6 +1,7 @@
 import Redis   from 'ioredis'
 import _       from 'lodash'
 
+import RadQL   from './radql'
 import { IDX_RANGE } from './macros'
 
 import { scripts as vertexScripts
@@ -22,7 +23,7 @@ const scripts = _.assign
   , edgeScripts
   )
 
-export default function (port, host, options) {
+export default function (name, port, host, options) {
 
   if (port.keyPrefix || (options && options.keyPrefix))
     throw new Error("Key prefixes are not supported yet")
@@ -42,9 +43,13 @@ export default function (port, host, options) {
       , line
       )
 
+  let rqlSource = null
+
   const G =
 
     { redis
+    , job: {}
+    , name
 
     // TODO: optimize identity calls to
     // reduce function call overhead
@@ -63,31 +68,55 @@ export default function (port, host, options) {
               .then(resolve)
           )(jobs)
 
-    // TODO: maintain internal registry to allow queries directly to graph source
-    , Vertex: (...args) =>
-        SimpleVertex(G, ...args)
+    // vertex registrars
+    , Vertex:          registerVertex(SimpleVertex)
 
-    , ArrayEdge: (...args) =>
-        ArrayEdge(G, ...args)
+    // edge registrars
+    , ArrayEdge:       registerEdge(ArrayEdge)
+    , Edge:            registerEdge(SimpleEdge)
+    , OneToMany:       registerEdge(OneToMany)
+    , OneToOne:        registerEdge(OneToOne)
+    , OrderedEdge:     registerEdge(OrderedEdge)
+    , SemiOrderedEdge: registerEdge(SemiOrderedEdge)
 
-    , Edge: (...args) =>
-        SimpleEdge(G, ...args)
-
-    , OneToMany: (...args) =>
-        OneToMany(G, ...args)
-
-    , OneToOne: (...args) =>
-        OneToOne(G, ...args)
-
-    , OrderedEdge: (...args) =>
-        OrderedEdge(G, ...args)
-
-    , SemiOrderedEdge: (...args) =>
-        SemiOrderedEdge(G, ...args)
-
+    , get Source() {
+        return rqlSource
+          || ( rqlSource = RadQL(G) )
+      }
 
     }
 
   return G
 
+  function registerVertex(Type) {
+    return function(name, ...args) {
+      // create vertex
+      const V = Type(G, name, ...args)
+      // register jobs
+      if (!G.job[name])
+        G.job[name] = {}
+      _.assign(G.job[name], V.job)
+      // return vertex
+      return V
+    }
+  }
+
+  function registerEdge(Type) {
+    return function(from, type, to, ...args) {
+      // create edge
+      const E = Type(G, from, type, to, ...args)
+      // register jobs
+      if (!G.job[from])
+        G.job[from] = {}
+      if (!G.job[from][type])
+        G.job[from][type] = {}
+      if (!G.job[from][type][to])
+        G.job[from][type][to] = {}
+      _.assign(G.job[from][type][to], E.job)
+      // return edge
+      return E
+    }
+
+
+  }
 }

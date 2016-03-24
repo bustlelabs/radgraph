@@ -21,6 +21,8 @@ import { identity
        , parsers
        } from '../utils'
 
+import { VertexType } from '../radql'
+
 // macros
 
 import { BUILD_VALS
@@ -156,6 +158,15 @@ export default function (G, type, fields) {
 
     }
 
-  return wrapExec(G, jobs)
+  let Type = null
+
+  return _.assign
+    ( wrapExec(G, jobs)
+    , { get Type() {
+          return Type
+            || ( Type = VertexType(G, type, jobs) )
+        }
+      }
+    )
 
 }
