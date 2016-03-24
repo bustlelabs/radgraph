@@ -112,8 +112,8 @@ local curpos = redis.call("ZSCORE", ${FROM_ADJ}, to)
 local card   = redis.call("ZCARD", ${FROM_ADJ})
 
 if pos == "PUSH" then
-  position = card + (curpos and 0 or 1)
-elseif pos + (curpos and 1 or 0) <= card + 1 then
+  position = card + (curpos and -1 or 0)
+elseif pos + (curpos and 1 or 0) <= card then
   position = pos
 else
   return { err = 'Index out of range' }
@@ -149,7 +149,7 @@ local from = table.remove(ARGV)
 local position = pos + 0
 local card     = redis.call("ZCARD", ${FROM_ADJ})
 
-if position > card then
+if position >= card then
   return { err = 'Index out of range' }
 end
 
@@ -273,7 +273,7 @@ export default function(G, fType, eType, tType, fields) {
 
     { all: indexJob(type, parser)
 
-    , from: ( from, { start = 1, stop = 0, properties } = {} ) =>
+    , from: ( from, { start = 0, stop = 0, properties } = {} ) =>
         properties
         ? normalize(properties).do(properties =>
             [ 'oefrom'

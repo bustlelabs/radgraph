@@ -24,7 +24,7 @@ describe ('Ordered Edge', function() {
         assert.equal(e.type, "A:Has:B")
         assert.equal(e.to,   1)
         assert.equal(e.foo,  1)
-        assert.equal(e.position, 1)
+        assert.equal(e.position, 0)
         assert.isNumber(e.created_at)
         assert.isNumber(e.updated_at)
         e1 = e
@@ -39,8 +39,8 @@ describe ('Ordered Edge', function() {
       .then(([e, f]) => {
         assert.isObject(e)
         assert.isObject(f)
-        assert.equal(e.position, 2)
-        assert.equal(f.position, 1)
+        assert.equal(e.position, 1)
+        assert.equal(f.position, 0)
         e2 = e
         e3 = f
       })
@@ -69,23 +69,23 @@ describe ('Ordered Edge', function() {
   describe('.insert', function() {
 
     it ('should take an offset parameter', function() {
-      return E.insert(1, 3, 2, { foo: 4 })
+      return E.insert(1, 3, 1, { foo: 4 })
       .then(e => {
         assert.isObject(e)
-        assert.equal(e.position, 2)
+        assert.equal(e.position, 1)
         assert.equal(e.foo, 4)
         e4 = e
       })
     })
     it ('should raise an out of range error', function() {
-      return assertError(() => E.insert(1, 3, 100))
+      return assertError(() => E.insert(1, 3, 4))
     })
     it ('should handle shifting/uniqueness', function() {
-      return E.insert(1, 1, 3, { foo: 0 })
+      return E.insert(1, 1, 2, { foo: 0 })
       .then(e => {
         assert.isObject(e)
         assert.equal(e.foo, 0)
-        assert.equal(e.position, 3)
+        assert.equal(e.position, 2)
         e1 = e
       })
     })
@@ -107,15 +107,15 @@ describe ('Ordered Edge', function() {
         assert.isObject(es[2])
 
         assert.equal(es[0].to,       3)
-        assert.equal(es[0].position, 1)
+        assert.equal(es[0].position, 0)
         e4 = es[0]
 
         assert.equal(es[1].to,       2)
-        assert.equal(es[1].position, 2)
+        assert.equal(es[1].position, 1)
         e2 = es[1]
 
         assert.equal(es[2].to,       1)
-        assert.equal(es[2].position, 3)
+        assert.equal(es[2].position, 2)
         e1 = es[0]
       })
     })
@@ -129,10 +129,10 @@ describe ('Ordered Edge', function() {
 
   describe('.move', function() {
     it ('should return the moved edge', function() {
-      return E.move(1, 2, 1)
+      return E.move(1, 2, 0)
       .then(e => {
         assert.isObject(e)
-        assert.equal(e.position, 1)
+        assert.equal(e.position, 0)
         e2 = e
       })
     })
@@ -172,10 +172,10 @@ describe ('Ordered Edge', function() {
       return E.update(1, 2, { position: 3 })
       .then(e => {
         assert.isObject(e)
-        assert.equal(e.position, 1)
+        assert.equal(e.position, 0)
         e2.updated_at = e.updated_at
       })
-      .then(() => E.at(1, 1, ['bar']))
+      .then(() => E.at(1, 0, ['bar']))
       .then(e => assert.deepEqual(e, e2))
     })
     it ('should update the index', function() {
@@ -255,12 +255,12 @@ describe ('Ordered Edge', function() {
     })
 
     it ('should maintain order', function() {
-      return E.at(1, 2, 'all')
+      return E.at(1, 1, 'all')
       .then(e => {
         assert.isObject(e)
         assert.equal(e.from, 1)
         assert.equal(e.to, 3)
-        assert.equal(e.position, 2)
+        assert.equal(e.position, 1)
       })
     })
 
@@ -310,14 +310,14 @@ describe ('Ordered Edge', function() {
     })
     it ('should have a working .at shorthand', function() {
       return G.exec
-        ( [ E.job.from(1, { start: 2, stop: 2, properties: 'all' })
-          , E.job.from(1, { start: 2, stop: 2 })
-          , E.job.at(1, 2, 'all')
-          , E.job.at(1, 2)
+        ( [ E.job.from(1, { start: 1, stop: 1, properties: 'all' })
+          , E.job.from(1, { start: 1, stop: 1 })
+          , E.job.at(1, 1, 'all')
+          , E.job.at(1, 1)
           ]
         )
       .then(([[e], [f], g, h]) => {
-        assert.deepEqual(e3, e)
+        assert.deepEqual()
         assert.deepEqual(e, g)
         assert.equal(f, h)
       })
