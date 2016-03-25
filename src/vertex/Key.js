@@ -26,7 +26,7 @@ export default function (G, type) {
     { get: key =>
         [ 'get'
         , [ `${type}:${key}` ]
-        , JSON.parse
+        , v => v && (v !== '') && JSON.parse(v)
         ]
 
     , set: (key, value) =>
