@@ -11,6 +11,7 @@ import { IDX_RANGE } from './macros'
 
 import { scripts as vertexScripts
        , SimpleVertex
+       , KeyValuePair
        } from './vertex'
 
 import { scripts as edgeScripts
@@ -93,6 +94,7 @@ export default function (name, port, host, options) {
 
     // vertex registrars
     , Vertex:          registerVertex(SimpleVertex)
+    , Key:             registerVertex(KeyValuePair)
 
     // edge registrars
     , ArrayEdge:       registerEdge(ArrayEdge)

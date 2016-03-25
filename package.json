@@ -1,6 +1,6 @@
 {
   "name": "radgraph",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Simple, opinionated, object association API",
   "main": "lib/index.js",
   "scripts": {
@@ -29,7 +29,7 @@
     "eslint": "^2.0.0",
     "graphql": "^0.4.18",
     "mocha": "^2.4.5",
-    "radql": "^0.1.9"
+    "radql": "^0.1.11"
   },
   "dependencies": {
     "babel-core": "^6.7.4",

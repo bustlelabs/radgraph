@@ -63,6 +63,27 @@ describe ('RadQL', function() {
     return test(q, r)
   })
 
+  it ('should query Key types', function() {
+    const q = `{ API { user(id: 1) { name uploaded { key, size, uploader { name } } } } }`
+    return test
+      ( q
+      , { user:
+          { name: "Alice"
+          , uploaded:
+            [ { key: "selfie2.jpg"
+              , size: 42069
+              , uploader: { name: "Alice" }
+              }
+            , { key: "selfie1.jpg"
+              , size: 420
+              , uploader: { name: "Alice" }
+              }
+            ]
+          }
+        }
+      )
+  })
+
   it ('should perform mutations', function() {
     const q = `mutation {
       API: API__changeName(id: "1", name: "Eve")

@@ -144,3 +144,29 @@ export function VertexType(G, name, jobs) {
   return Type
 
 }
+
+export function KeyType(G, name, jobs) {
+
+  class Type extends RadType {
+
+    static key({ key }) { return key }
+    static args = { key: "id!" }
+
+    static get(root, { key }) {
+      return root.e$[G.name][name].get(key)
+        .then(attrs => attrs && new this(root, key, attrs))
+    }
+
+    constructor(root, key, attrs) {
+      super(root)
+      // NOTE: we don't allow a _key method
+      // key value pairings should be assumed to be immutable by any front-end client
+      this._key   = key
+      this._attrs = attrs
+    }
+
+  }
+
+  return Type
+
+}

@@ -7,3 +7,4 @@ export const scripts = _.assign
   )
 
 export { default as SimpleVertex } from './Simple'
+export { default as KeyValuePair } from './Key'

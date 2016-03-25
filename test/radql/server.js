@@ -3,7 +3,9 @@ import { RadAPI
        , field
        , mutation
        , service
+       , type
        , args
+       , delegate
        } from 'radql'
 
 import Radgraph from '../../src'
@@ -47,6 +49,12 @@ class User extends UserVertex.Type {
       .map(id => this.e$.User({ id }))
   }
 
+  @ field([ "Media" ])
+  uploaded() {
+    return this.e$.G.User.Uploaded.Media.from(this._id)
+      .map(key => this.e$.Media({ key }))
+  }
+
   @ mutation("User")
   @ args({ name: "string!" })
   changeName({ name }) {
@@ -56,7 +64,42 @@ class User extends UserVertex.Type {
 
 }
 
-const BDSM = G.Edge( "User", "Dominates", "User" )
+G.Edge( "User", "Dominates", "User" )
+
+const MediaKey = G.Key("Media")
+
+G.OneToMany( "User", "Uploaded", "Media" )
+
+class Media extends MediaKey.Type {
+
+  @ service
+  @ type("Media")
+  @ args({ key: "string!", value: "string!", user_id: "ID!" })
+  static create(root, { key, value, user_id }) {
+    const { G } = root.e$
+    return G.Media.set(key, JSON.parse(value))
+      .then(val => G.User.Uploaded.Media.create(user_id, key).return(val))
+      .then(val => new this(root, key, val))
+  }
+
+  @ field("string")
+  key() {
+    return this._key
+  }
+
+  @ field("integer")
+  size() {
+    return this._attrs.size
+  }
+
+  @ field("User")
+  uploader() {
+    const { G, User } = this.e$
+    return G.User.Uploaded.Media.of(this._key)
+      .then(id => User({ id }))
+  }
+
+}
 
 class API extends RadAPI {
 
@@ -69,7 +112,7 @@ class API extends RadAPI {
   @ mutation("object")
   fixtures() {
 
-    const { G, User } = this.e$
+    const { G, User, Media } = this.e$
     const Dominates = G.User.Dominates.User
 
     return G.redis.flushdb()
@@ -82,6 +125,9 @@ class API extends RadAPI {
         , Dominates.create(1, 3)
         , Dominates.create(1, 4)
         , Dominates.create(2, 2)
+        , Media.create({ key: "selfie1.jpg", value: JSON.stringify({ size: 420   }), user_id: 1 })
+        , Media.create({ key: "selfie2.jpg", value: JSON.stringify({ size: 42069 }), user_id: 1 })
+        , Media.create({ key: "selfie3.jpg", value: JSON.stringify({ size: 69420 }), user_id: 2 })
         ]
       )
 
@@ -103,8 +149,10 @@ class API extends RadAPI {
       .then( u => u && u._delete() )
   }
 
+  @ delegate("Mutation")
+  createMedia() { return { to: "Media", service: "create" } }
 }
 
-const { serve } = RadQL( [ API ], [ User ], [ G.Source ] )
+const { serve } = RadQL( [ API ], [ User, Media ], [ G.Source ] )
 
 export default serve
