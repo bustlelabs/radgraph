@@ -3,35 +3,23 @@
 
 // The following methods take the ARGV properties and converts them to a local vals table, preserving order
 
-export const BUILD_VALS = `
-local vals = {}
-for i,v in ipairs(ARGV) do
-  if i % 2 == 0 then
-    table.insert(vals, v)
-  end
-end
-`
-
 export const APPEND_VAL = (name, value) => `
 table.insert(ARGV, "${name}")
-table.insert(ARGV, ${value})
-table.insert(vals, ${value})
-`
+table.insert(ARGV, cjson.encode(${value}))`
 
-export const SET_IDX = (index, key, value = 'time') => `
-redis.call("ZADD", type..":indices:${index}", ${value}, ${key})`
-
-export const REM_IDX = (index, key) => `
-redis.call("ZREM", type..":indices:${index}",           ${key})`
-
-export const IDX_RANGE = `
-local start = table.remove(ARGV)
-local stop  = table.remove(ARGV) + start - 1
-local keys  = redis.call("ZREVRANGE", KEYS[1], start, stop)
-
-local results = {}
-for _,key in ipairs(keys) do
-  table.insert(results, redis.call("HMGET", key, unpack(ARGV)))
+// generates a unique 8 character id
+export const GEN_ID = `
+math.randomseed(time)
+local CHAR_SET = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890-_"
+local rand = function(length)
+  local s = ""
+  for i=1,length do
+    s=s..string.char(CHAR_SET:byte(math.random(1, 64)))
+  end
+  return s
 end
-
-return results`
+local id = rand(8)
+while redis.call("EXISTS", id) ~= 0 do
+  id = rand(8)
+end
+`

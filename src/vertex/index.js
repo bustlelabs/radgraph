@@ -1,10 +1,12 @@
 import _ from 'lodash'
-import { scripts as simpleScripts } from './Simple'
 
-export const scripts = _.assign
+import V, { scripts as VScripts } from './V'
+
+const scripts = _.assign
   ( {}
-  , simpleScripts
+  , VScripts
   )
 
-export { default as SimpleVertex } from './Simple'
-export { default as KeyValuePair } from './Key'
+export { scripts
+       , V
+       }

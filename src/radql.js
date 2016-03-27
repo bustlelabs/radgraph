@@ -1,24 +1,42 @@
-import _       from 'lodash'
-import Promise from 'bluebird'
-import Redis   from 'ioredis'
+import _ from 'lodash'
 
 import { RadService
        , RadType
        } from 'radql'
 
-export default function(G) {
+export function Source(G) {
 
-  // create source
+  const { vertex, edge } = G
+
   class Source extends RadService {
 
     static _name = G.name
-    static graph = G
 
     constructor(root) {
       super(root)
-      this.radgraph = G
-      this.redis    = G.redis
-      wrapJobs(this, this, G.job)
+
+      const src = this
+      const e$  = this.e$
+      const e =
+        { do: (op, ...args) =>
+            e$.fetch({ src, op, args, key: cacheKey(op, ...args) })
+        , Vertex: (type, ...args) =>
+            vertex[type].instance(e, ...args)
+        , Adjacency: (type, dir, ...args) =>
+            edge[type][dir](e, ...args)
+        , Edge: (...args) =>
+            edge[type].instance(e, ...args)
+        }
+      this.redis = G.redis
+      _.forEach(vertex, (v, n) => {
+        this[n] = (...args) => v.get(e, ...args)
+        _.forEach(v, (j, k) => {
+          if (_.isFunction(j))
+            this[n][k] = (...args) => j(e, ...args)
+          else
+            this[n][k] = j
+        })
+      })
     }
 
     _fetch(jobs, { SKIP_ATTR_GROUPING } = {}, n) {
@@ -29,33 +47,31 @@ export default function(G) {
 
       // group HGETs into HMGETs
       if (!SKIP_ATTR_GROUPING) {
-        const HGETs = _.remove(jobs, j => j.req.job[0] === "hget")
+        const HGETs  = _.remove(jobs, j => j.req.op === "hget")
         const HMGETs = _(HGETs)
-          .groupBy('req.job.1.0')
-          .map((v, k) =>
-            ( { req:
-                { job:
-                  [ 'hmget'
-                  , [ k, _.map(v, 'req.job.1.1') ]
-                  , vals => _.map(vals, (val, idx) => v[idx].req.job[2](val))
-                  ]
-                }
-              , resolve: vals => _.forEach(vals, (val, idx) => v[idx].resolve(val))
-              , reject:  err  => _.forEach(v, j => j.reject(err))
-              }
+          .groupBy('req.args.0')
+          .map
+            ( (v, k) =>
+                ( { req:
+                    { op: 'hmget'
+                    , args: [ k, _.map(v, 'req.args.1' ) ]
+                    }
+                  , resolve: vals => _.forEach(vals, (val, idx) => v[idx].resolve(val))
+                  , reject:  err  => _.forEach(v, j => j.reject(err))
+                  }
+                )
             )
-          )
           .value()
         jobs = _.concat(jobs, HMGETs)
       }
-
-      pipe(this.redis.pipeline(), _.map(jobs, 'req.job'))
+      pipe(this.redis.pipeline(), _.map(jobs, 'req'))
         .exec()
-        .map(
-          ([err, v], i) => err
-          ? (jobs[i].reject(err))
-          : jobs[i].resolve(jobs[i].req.job[2](v))
-        )
+        .map
+          ( ([err, v], i) => err
+              ? jobs[i].reject(err)
+              : jobs[i].resolve(v)
+          )
+
     }
 
   }
@@ -64,105 +80,36 @@ export default function(G) {
 
 }
 
-function wrapJobs(root, ctx, jobs) {
-  _.forEach
-    ( jobs
-    , function(j, name) {
-        if(_.isFunction(j)) {
-          ctx[name] = (...a) => {
-            return root.e$.fetch
-              ({ src: root, job: j(...a) })
-          }
-        } else {
-          ctx[name] = {}
-          wrapJobs(root, ctx[name], j)
-        }
-      }
-    )
-}
-
 function pipe(line, jobs) {
   return _.reduce
     ( jobs
-    , (p, [ op, args ]) =>
+    , (p, { op, args }) =>
         p[op](...args)
     , line
     )
+
 }
 
-// for now, this only handles vertex types
-// edge types will come later
+function cacheKey(op, node, val) {
+  return (op === 'hget')
+    ? `${node}::${val}`
+    : undefined
+}
 
-export function VertexType(G, name, jobs) {
+export function VertexType(G, name) {
 
   class Type extends RadType {
 
-    static key({ id }) { return id }
     static args = { id: "id!" }
-
-    // fetch by id
     static get(root, attrs) {
-      // vertex confirmed, bypass check
-      if (attrs.type || attrs.created_at || attrs.updated_at)
-        return new this(root, attrs)
-      // confirm vertex exists
-      return root.e$[G.name][name].get(attrs.id, [])
-        .then(attrs => attrs && new this(root, attrs))
+      return root.e$[G.name][name](attrs.id, attrs)
+        .verify()
+        .then(v => v && new this(root, v))
     }
 
-    constructor(root, attrs) {
+    constructor(root, v) {
       super(root)
-      this._id    = attrs.id
-      this._attrs = _.mapValues(attrs, Promise.resolve)
-      this._difs  = {}
-    }
-
-    attr(p) {
-      return this._attrs[p]
-        || ( this._attrs[p] = this.e$[G.name][name].attrs(this._id, p) )
-    }
-
-    setAttr(p, v) {
-      this._difs[p]  = v
-      this._attrs[p] = Promise.resolve(v)
-    }
-
-    _save() {
-      return this.e$[G.name][name].update(this._id, this._difs)
-        .then(attrs => _.assign(this.attrs, _.mapValues(attrs, Promise.resolve)))
-        .return(this)
-    }
-
-    _delete() {
-      return this.e$[G.name][name].delete(this._id)
-        .then(attrs => this._attrs = _.mapValues(attrs, Promise.resolve))
-        .return(this)
-    }
-
-  }
-
-  return Type
-
-}
-
-export function KeyType(G, name, jobs) {
-
-  class Type extends RadType {
-
-    static key({ key }) { return key }
-    static args = { key: "id!" }
-
-    static get(root, { key }) {
-      return root.e$[G.name][name].get(key)
-        .then(attrs => attrs && new this(root, key, attrs))
-    }
-
-    constructor(root, key, attrs) {
-      super(root)
-      // NOTE: we don't allow a _key method
-      // key value pairings should be assumed to be immutable by any front-end client
-      this._key   = key
-      this._attrs = attrs
+      this.v = v
     }
 
   }
