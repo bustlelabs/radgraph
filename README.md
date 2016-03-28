@@ -3,27 +3,91 @@
 Radgraph is a graph database system system inspired by Gremlin.
 Proper Gremlin 
 
-## Vertex
+# `G`
 
-A simple vertex is an object in the graph.
+A radgraph instance, typically denoted `G`, is the description of the graph:
 
-To access a vertex, we call:
+```js
+import Radgraph from 'radgraph'
 
-`G.V(id)`
+const G = Radgraph("g", redisOpts)
+```
 
-This returns a vertex object, which supports the following operations:
+## `G.describe`
 
-`G.V(id).id` returns the current id
-`G.V(id).attr(a1, a2, ...])` returns a promise containing either the attribute specified, or an array of the attributes specified
-`G.V(id).dump()` returns a JSON dump of the vertex
-`G.V(id).check(type)` returns a promise that either resolves to itself, or rejects if the given vertex does not conform to the type specified
-`G.V(id).update({ k1: v1, ... })`
-`G.V(id).delete()`
-`G.V(id).in(label)` returns an Adjacency directed towards the current vertex
-`G.V(id).out(label)`
+We build our schema by calling methods on `G.describe`:
 
-## Enum
+```js
 
-## Attribute
+ G.describe
 
-## Adjacency
+  .Vertex   ( "User"
+            , { name: "string"
+              , role: "integer"
+              }
+            )
+
+  .Vertex   ( "Post"
+            , { title: "string"
+              , media_key: "string"
+              }
+            )
+
+  .Edge     ( "Authored"   // User-[Authored]->Post
+            , { notes: "string"
+              }
+            )
+
+```
+
+# `g`
+
+A radgraph executor, typically denoted `g`, is our means for interacting with the graph:
+
+```js
+const g = G.Executor()
+```
+
+## `g.V(id)`
+
+## `g.Type(id)`
+
+## `g.Type.service(...args)`
+
+# `v`
+
+A vertex instance provides an interface for performing graph operations relative to a vertex in the graph:
+
+```js
+g.V(id).then(v => ...)
+```
+
+## Simple Vertex
+
+### `v.attr(name)`
+
+### `v.set({ k: v })`
+
+### `v.delete()`
+
+## Key Vertex
+
+## `v.in(label)`
+
+## `v.out(label)`
+
+# Adjacencies
+
+## Multi
+
+## Array
+
+## Simple
+
+## Ordered
+
+## SemiOrdered
+
+## OneToMany
+
+## OneToOne

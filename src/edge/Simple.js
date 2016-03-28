@@ -1,6 +1,7 @@
 class Edge {
 
-  static label = null
+  static type = null
+  static services = [ 'in', 'out' ]
 
   static new(e$, from, to, id) {
 
@@ -11,7 +12,9 @@ class Edge {
   }
 
   constructor(e$, from, to) {
-
+    this.from  = this.from
+    this.type = this.constructor.type
+    this.key = `${from}-[${this.type}]->${to}`
   }
 
   attrs(...a) {
@@ -34,17 +37,17 @@ class Edge {
 
 class In {
 
-  static edge  = Edge
-  static label = null
+  static edge = Edge
 
   constructor(e$, to) {
-    this.e$    = e$
-    this.label = this.constructor.label
-    this.to    = this.to
+    this.e$   = e$
+    this.type = this.constructor.edge.type
+    this.to   = this.to
+    this.adj  = `-[${type}]->${to}`
   }
 
   ids({ limit, offset }) {
-
+    return this.e$.do('zrevrange', this.adj, offset, offset + limit - 1)
   }
 
   edges({ limit, offset }) {
@@ -52,7 +55,8 @@ class In {
   }
 
   add(from, attrs) {
-
+    const { constructor, e$, to } = this
+    return constructor.edge.create(e$, from, to, attrs)
   }
 
   deleteAll() {
@@ -63,13 +67,12 @@ class In {
 
 class Out {
 
-  static edge  = Edge
-  static label = null
+  static edge = Edge
 
   constructor(e$, from) {
-    this.e$    = e$
-    this.label = this.constructor.label
-    this.from  = this.from
+    this.e$   = e$
+    this.type = this.constructor.edge.type
+    this.from = this.from
   }
 
   ids({ limit, offset }) {
@@ -92,4 +95,21 @@ class Out {
 
 }
 
+export default function(type, fields) {
 
+  return class E extends Edge {
+
+    static type   = type
+    static fields = fields
+
+    static in = class I extends In {
+      static edge = E
+    }
+
+    static out = class I extends Out {
+      static edge = E
+    }
+
+  }
+
+}
