@@ -23,6 +23,10 @@ export default function(type, fields) {
 
     , create: (e$, attrs) =>
         e$.do('tvadd', serialize(attrs, fields), type, +Date.now())
+          .then(deserializeHash)
+          .then(v => instance(e$, v.id, v))
+
+    , instance
     }
 
   return Type

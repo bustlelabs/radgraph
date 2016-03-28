@@ -13,7 +13,11 @@ export function reset(G) {
 }
 
 export function assertError(fn) {
-  return Promise.resolve(fn())
-    .then(a => assert.fail(a, undefined))
-    .catch(assert.isOk)
+  try {
+    return Promise.resolve(fn())
+      .then(a => assert.fail(a, undefined))
+      .catch(assert.isOk)
+  } catch(e) {
+    assert.isOk(e)
+  }
 }

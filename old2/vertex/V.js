@@ -14,7 +14,7 @@ const V =
   , create: (e$, attrs) =>
       e$.do('vadd', serialize(attrs), +Date.now())
         .then(deserializeHash)
-        .then(v => e$.Vertex("V", v.id, v))
+        .then(v => instance(e$, v.id, v))
 
   , instance
 

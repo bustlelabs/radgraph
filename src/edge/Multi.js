@@ -6,11 +6,11 @@ class Edge {
 
   }
 
-  static create(e$) {
+  static create(e$, from, to, attrs) {
 
   }
 
-  constructor(e$, from, to) {
+  constructor(e$, from, to, id) {
 
   }
 
@@ -34,7 +34,7 @@ class Edge {
 
 class In {
 
-  static edge  = Edge
+  static edge = Edge
   static label = null
 
   constructor(e$, to) {
@@ -51,7 +51,11 @@ class In {
 
   }
 
-  add(from, attrs) {
+  push(from, attrs) {
+
+  }
+
+  insert(from, position, attrs) {
 
   }
 
@@ -63,7 +67,7 @@ class In {
 
 class Out {
 
-  static edge  = Edge
+  static edge = Edge
   static label = null
 
   constructor(e$, from) {
@@ -80,10 +84,13 @@ class Out {
 
   }
 
-  add(to, attrs) {
+  push(to, attrs) {
     const { e$, from } = this
     return this.constructor.edge
-      .create(e$, from, to, attrs)
+  }
+
+  insert(to, position, attrs) {
+
   }
 
   deleteAll() {
@@ -91,5 +98,3 @@ class Out {
   }
 
 }
-
-

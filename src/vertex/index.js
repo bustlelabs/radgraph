@@ -1,12 +1,36 @@
-import _ from 'lodash'
+import _       from 'lodash'
+import Promise from 'bluebird'
 
-import V, { scripts as VScripts } from './V'
+import SimpleVertex, { scripts as Vscripts } from './Simple'
 
-const scripts = _.assign
-  ( {}
-  , VScripts
+// A vertex is a mapping from Id -> Type
+
+// g.V(id)
+//  .then(v => ...)
+
+export const V = (e$, id) =>
+  e$.do('get', id)
+  .then(type => type
+    ? e$.Vertex(type, id)
+    : Promise.reject(`Vertex "${id}" does not exist`)
   )
 
-export { scripts
-       , V
-       }
+// g.describe
+//  .Union("Zone", [ "ListZone", "FeedZone" ])
+
+// g.Zone(id)
+//  .then(v => assert(v.type === "ListZone"))
+
+export const UnionVertex = (name, types) => (e$, id) =>
+  e$.do('get', id)
+  .then(type => ~types.indexOf(type) &&
+    e$.Vertex(type, id)
+  )
+
+export { SimpleVertex }
+
+export const scripts =
+  _.assign
+    ( {}
+    , Vscripts
+    )

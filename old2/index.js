@@ -4,15 +4,14 @@ import _     from 'lodash'
 import { Source, VertexType } from './radql'
 import Executor from './exec'
 
-import { scripts as vScripts
+import { scripts as vertexScripts
        , V
-       , UnionVertex
-       , SimpleVertex
+       , Typed
        } from './vertex'
 
 const scripts = _.assign
   ( {}
-  , vScripts
+  , vertexScripts
   )
 
 export default function(name, port, host, options) {
@@ -32,9 +31,10 @@ export default function(name, port, host, options) {
 
     , describe:
         // vertex types
-        { Vertex:    describeVertex(SimpleVertex)
-        , Union:     describeVertex(UnionVertex)
+        { Vertex:    describeVertex(Typed)
+        , Enum:      describeVertex(null)
         , Key:       describeVertex(null)
+        , Attribute: describeVertex(null)
         // edge types
         }
 

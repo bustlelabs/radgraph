@@ -29,13 +29,12 @@ export function Source(G) {
         }
       this.redis = G.redis
       _.forEach(vertex, (v, n) => {
-        if (!v.new)
-          return this[n] = (...args) => v(e, ...args)
-
-        this[n] = (...args) => v.new(e, ...args)
-        _.forEach(v.services, k => {
-          if (_.isFunction(v[k]))
-            this[n][k] = (...args) => v[k](e, ...args)
+        this[n] = (...args) => v.get(e, ...args)
+        _.forEach(v, (j, k) => {
+          if (_.isFunction(j))
+            this[n][k] = (...args) => j(e, ...args)
+          else
+            this[n][k] = j
         })
       })
     }
@@ -94,10 +93,7 @@ function pipe(line, jobs) {
 function cacheKey(op, node, val) {
   return (op === 'hget')
     ? `${node}::${val}`
-    : ( (op === 'get')
-      ? node
-      : undefined
-      )
+    : undefined
 }
 
 export function VertexType(G, name) {
