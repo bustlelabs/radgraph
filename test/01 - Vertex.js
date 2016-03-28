@@ -3,6 +3,17 @@ import { assert } from 'chai'
 import Radgraph   from '../src'
 import { redisOpts, reset, assertError } from './utils'
 
+import RadQL
+   , { field
+     , mutation
+     , service
+     , type
+     , args
+     , delegate
+     , RadAPI
+     , RadType
+     } from 'radql'
+
 const G = Radgraph("G_01", redisOpts)
 
  G.describe
@@ -212,6 +223,60 @@ describe ('01 - Simple Vertex', function() {
   })
 
   describe ('RadQL Integration', function() {
+
+    class API extends RadAPI {
+
+      @ field("User")
+      @ args({ id: "id!" })
+      user({ id }) {
+        return this.e$.User({ id })
+      }
+
+      @ delegate("mutation")
+      new() { return { to: "User", service: "create" } }
+    }
+
+    class User extends G.VertexType("User") {
+
+      @ service
+      @ type("User")
+      @ args({ name: "string!", age: "integer" })
+      static create(root, { name, age }) {
+        const G = root.e$.G_01
+        return G.User.create({ name, age })
+          .then(v => new this(root, v))
+      }
+
+      @ field("id!")
+      id() { return this.v.id }
+
+      @ field("string")
+      name() { return this.v.attr('name') }
+
+      @ field("integer")
+      age() { return this.v.attr('age') }
+
+    }
+
+    const { serve } = RadQL( [ API ], [ User ], [ G.Source() ] )
+
+    let id = null
+
+    before(function() {
+      return serve(`mutation { API__new(name: "Daria", age: 17) { id name age } }`)
+        .then(d => id = d.data.API__new.id)
+    })
+
+    it ('should work', function() {
+      return serve(`{ API { user(id : "${id}") { id name age } } }`)
+      .then(d => {
+        const user = d.data.API.user
+        assert.equal(user.id, id)
+        assert.equal(user.name, "Daria")
+        assert.equal(user.age, 17)
+      })
+
+    })
 
   })
 

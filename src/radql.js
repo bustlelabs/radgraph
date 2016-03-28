@@ -105,10 +105,13 @@ export function VertexType(G, name) {
   class Type extends RadType {
 
     static args = { id: "id!" }
-    static get(root, attrs) {
-      return root.e$[G.name][name](attrs.id, attrs)
-        .verify()
-        .then(v => v && new this(root, v))
+    static get(root, args) {
+      // passed a vertex object, skip the check
+      if (args.e$ && args.e$.do)
+        return new this (root, v)
+      // passed an id, constructor a vertex object
+      return root.e$[G.name][name](args.id)
+        .then(v => new this(root, v))
     }
 
     constructor(root, v) {
