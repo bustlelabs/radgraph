@@ -6,8 +6,9 @@ import Executor from './exec'
 
 import { scripts as vScripts
        , V
-       , UnionVertex
-       , SimpleVertex
+       , Union
+       , Vertex
+       , Key
        } from './vertex'
 
 const scripts = _.assign
@@ -32,9 +33,9 @@ export default function(name, port, host, options) {
 
     , describe:
         // vertex types
-        { Vertex:    describeVertex(SimpleVertex)
-        , Union:     describeVertex(UnionVertex)
-        , Key:       describeVertex(null)
+        { Vertex:    describeVertex(Vertex)
+        , Union:     describeVertex(Union)
+        , Key:       describeVertex(Key)
         // edge types
         }
 

@@ -12,12 +12,8 @@ export function reset(G) {
   }
 }
 
-export function assertError(fn) {
-  try {
-    return Promise.resolve(fn())
-      .then(a => assert.fail(a, undefined))
-      .catch(assert.isOk)
-  } catch(e) {
-    assert.isOk(e)
-  }
+export function assertError(p) {
+  return Promise.resolve(p)
+    .then(a => assert.fail(a, undefined))
+    .catch(assert.isOk)
 }

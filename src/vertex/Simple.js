@@ -1,8 +1,8 @@
 import _       from 'lodash'
 import Promise from 'bluebird'
 
-import { throwError
-       , assert
+import { assert
+       , deserialize
        } from '../utils'
 
 // TODO: updated_at, created_at, indices, etc.
@@ -39,11 +39,11 @@ class SimpleVertex {
              .then(()   => new this(e$, id))
   }
 
-  constructor(e$, id) {
+  constructor(e$, id, attrs = {}) {
     this.e$     = e$
     this.id     = id
     this.type   = this.constructor.type
-    this._attrs = {}
+    this._attrs = _.mapValues(attrs, Promise.resolve)
   }
 
   attrs(...a) {
@@ -116,12 +116,6 @@ function serialize(attrs, fields) {
     .toPairs()
     .flatten()
     .value()
-}
-
-function deserialize(x) {
-  return x
-    && ( x !== '' )
-    && JSON.parse(x)
 }
 
 function deserializeAll(attrs) {

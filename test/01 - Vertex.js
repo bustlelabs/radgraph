@@ -1,7 +1,7 @@
 import Promise from 'bluebird'
 import { assert } from 'chai'
-import Radgraph   from '../src'
 import { redisOpts, reset, assertError } from './utils'
+import Radgraph   from '../src'
 
 import RadQL
    , { field
@@ -104,7 +104,7 @@ describe ('01 - Simple Vertex', function() {
     })
 
     it ('should check the type', function() {
-      return assertError(() => g.Post(v1.id))
+      return assertError(g.Post(v1.id))
     })
 
     it ('should be accessible through the .V() method', function() {
@@ -204,7 +204,7 @@ describe ('01 - Simple Vertex', function() {
     })
 
     it ('should persist the deletion', function() {
-      return assertError(() => g.V(v1.delete()))
+      return assertError(g.V(v1.delete()))
     })
 
     it ('should save a full dump of the vertex', function() {

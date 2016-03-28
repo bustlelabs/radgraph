@@ -9,3 +9,10 @@ export function throwError(message) {
 export function assert(condition, message) {
   return condition || Promise.reject(message)
 }
+
+export function deserialize(x) {
+  return x
+    && ( x !== '' )
+    && JSON.parse(x)
+}
+

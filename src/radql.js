@@ -20,6 +20,11 @@ export function Source(G) {
       const e =
         { do: (op, ...args) =>
             e$.fetch({ src, op, args, key: cacheKey(op, ...args) })
+        // TODO: revisit if this is good or not
+        // for now I'm goign to say no, because it feels like magic
+        // this would resolve to a RadQL type of the same name, effectively making union types their own services
+        // , Vertex: (type, id) =>
+        //     e$[type]({ id })
         , Vertex: (type, ...args) =>
             vertex[type].instance(e, ...args)
         , Adjacency: (type, dir, ...args) =>
@@ -51,17 +56,15 @@ export function Source(G) {
         const HGETs  = _.remove(jobs, j => j.req.op === "hget")
         const HMGETs = _(HGETs)
           .groupBy('req.args.0')
-          .map
-            ( (v, k) =>
-                ( { req:
-                    { op: 'hmget'
-                    , args: [ k, _.map(v, 'req.args.1' ) ]
+          .map( (v, k) =>
+                  ( { req: { op: 'hmget'
+                           , args: [ k, _.map(v, 'req.args.1' ) ]
+                            }
+                    , resolve: vals => _.forEach(vals, (val, idx) => v[idx].resolve(val))
+                    , reject:  err  => _.forEach(v, j => j.reject(err))
                     }
-                  , resolve: vals => _.forEach(vals, (val, idx) => v[idx].resolve(val))
-                  , reject:  err  => _.forEach(v, j => j.reject(err))
-                  }
-                )
-            )
+                  )
+              )
           .value()
         jobs = _.concat(jobs, HMGETs)
       }
