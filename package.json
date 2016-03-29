@@ -1,6 +1,6 @@
 {
   "name": "radgraph",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Simple, opinionated, object association API",
   "main": "lib/index.js",
   "scripts": {
@@ -32,8 +32,6 @@
     "radql": "^0.1.11"
   },
   "dependencies": {
-    "babel-core": "^6.7.4",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.7.4",
     "bluebird": "^3.3.0",
     "ioredis": "^1.15.0",
     "lodash": "^4.3.0"
