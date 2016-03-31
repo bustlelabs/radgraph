@@ -107,7 +107,9 @@ export function VertexType(G, name, jobs) {
         return new this(root, attrs)
       // confirm vertex exists
       return root.e$[G.name][name].get(attrs.id, [])
-        .then(attrs => attrs && new this(root, attrs))
+        // confirm type
+        .then(assertType(name))
+        .then(attrs => new this(root, attrs))
     }
 
     constructor(root, attrs) {
@@ -145,6 +147,13 @@ export function VertexType(G, name, jobs) {
 
 }
 
+function assertType(type) {
+  return function(attrs) {
+    return (attrs && attrs.type === type)
+      ? Promise.resolve(attrs)
+      : Promise.reject(attrs.id ? `ERROR 404: Vertex ${attrs.id} is of type "${attrs.type || 'NULL'}", expected "${type}"` : `ERROR 404: Vertex not found`)
+  }
+}
 export function KeyType(G, name, jobs) {
 
   class Type extends RadType {
@@ -170,3 +179,4 @@ export function KeyType(G, name, jobs) {
   return Type
 
 }
+
