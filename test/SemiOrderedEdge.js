@@ -116,7 +116,7 @@ describe ('Semi-Ordered Edge', function() {
 
     // 1, 3, 2
     it ('should handle downward shifts', function() {
-      return E.move(1, 2, 3)
+      return E.move(1, 2, 2)
       .then(e  => e2 = e)
       .then(() => E.from(1))
       .then(es => assert.deepEqual(es, [ '1', '3', '2' ]))

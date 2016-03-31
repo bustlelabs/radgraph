@@ -100,7 +100,7 @@ local cur      = redis.call("HMGET",  edge_key, unpack(ARGV))
 local created  = cur[table.getn(cur)-1]
 local curpos   = redis.call("ZSCORE", from_key, to) + 0
 local above    = redis.call("ZREVRANGE", from_key, offset, offset, "WITHSCORES")[2]
-local score    = (above or 0) + 1
+local score    = (above or 0) + 0
 
 ${VALIDATE}
 if curpos <= score then

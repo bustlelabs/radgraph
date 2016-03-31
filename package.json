@@ -1,6 +1,6 @@
 {
   "name": "radgraph",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Simple, opinionated, object association API",
   "main": "lib/index.js",
   "scripts": {
