@@ -110,6 +110,9 @@ local type = table.remove(ARGV)
 local cur  = redis.call("HMGET", ${EDGE_KEY}, unpack(ARGV))
 local from = cur[table.getn(cur)-4]
 
+if not from then
+  return false
+
 ${VALIDATE}
 ${REM_IDXS}
 ${FROM_REM}
