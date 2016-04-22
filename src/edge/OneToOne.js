@@ -36,6 +36,9 @@ ${APPEND_VAL("updated_at" , updated_at)}
 
 const VALIDATE = v => `
 if not ${v} then
+  if not to then
+    to = ""
+  end
   return { err = 'Edge "'..from..'-('..type..')->'..to..'" does not exist' }
 end`
 

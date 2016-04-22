@@ -31,7 +31,7 @@ ${APPEND_VAL("updated_at" , updated_at)}
 
 const VALIDATE = `
 if not from then
-  return { err = 'Edge "'..from..'-['..type..')->'..to..'" does not exist' }
+  return { err = 'Edge "-['..type..')->'..to..'" does not exist' }
 end`
 
 const FROM_ADJ = 'from.."-["..type..")->"'
@@ -109,9 +109,6 @@ local to   = table.remove(ARGV)
 local type = table.remove(ARGV)
 local cur  = redis.call("HMGET", ${EDGE_KEY}, unpack(ARGV))
 local from = cur[table.getn(cur)-4]
-
-if not from then
-  return false
 
 ${VALIDATE}
 ${REM_IDXS}
